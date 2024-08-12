@@ -1,0 +1,4 @@
+.vscode/
+*.exe
+projor-go-example
+node_modules/

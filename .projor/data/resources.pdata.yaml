@@ -1,0 +1,35 @@
+id: resources
+name: Resources
+description: Persistent resource types
+schema: Resource
+objects:
+  - name: UserAccount
+    description: The user accounts in the system
+    fields:
+      - name: username
+        description: The username of the user account
+        type: basic#String
+        isList: false
+      - name: email
+        description: The email address of the user account
+        type: basic#String
+        isList: false
+      - name: flags
+        description: The flags of the user account
+        type: basic#String
+        isList: true
+  - name: Product
+    description: The products in the system
+    fields:
+      - name: name
+        description: The name of the product
+        type: basic#String
+        isList: false
+      - name: price
+        description: The price of the product
+        type: basic#Float32
+        isList: false
+      - name: description
+        description: The description of the product
+        type: basic#String
+        isList: false

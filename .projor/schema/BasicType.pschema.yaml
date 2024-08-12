@@ -1,0 +1,13 @@
+id: BasicType
+name: BasicType
+description: A basic type for resource attributes
+fields:
+  - name: go
+    type: string
+    description: The Go representation of the type
+  - name: ts
+    type: string
+    description: The TypeScript representation of the type
+  - name: tsDefault
+    type: string
+    description: The TypeScript default value of the type

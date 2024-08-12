@@ -1,0 +1,11 @@
+id: Field
+name: Field
+description: A field in a resource
+fields:
+  - name: type
+    type: reference
+    references: BasicType
+    description: The type of the field
+  - name: isList
+    type: boolean
+    description: Whether the field is a list

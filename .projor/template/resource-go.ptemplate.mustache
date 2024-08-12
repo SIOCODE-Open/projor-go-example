@@ -1,0 +1,73 @@
+{
+    "forEach": "resources",
+    "filename": "{{kebabCase name}}.go"
+}
+---
+package main
+
+import "errors"
+
+type {{pascalCase name}} struct {
+    Id string `json:"id"`
+    {{#each fields}}
+    {{pascalCase name}} {{#if isList}}[]{{/if}}{{type.go}} `json:"{{snakeCase name}}"`
+    {{/each}}
+}
+
+type I{{pascalCase name}}Repository interface {
+    Create({{camelCase name}} *{{pascalCase name}}) error
+    Update({{camelCase name}} *{{pascalCase name}}) error
+    Delete({{camelCase name}} *{{pascalCase name}}) error
+    GetByID(id string) (*{{pascalCase name}}, error)
+    GetAll() ([]{{pascalCase name}}, error)
+}
+
+type {{pascalCase name}}Repository struct {
+    I{{pascalCase name}}Repository
+    entities map[string]*{{pascalCase name}}
+}
+
+func New{{pascalCase name}}Repository() *{{pascalCase name}}Repository {
+    return &{{pascalCase name}}Repository{
+        entities: make(map[string]*{{pascalCase name}}),
+    }
+}
+
+func (repo *{{pascalCase name}}Repository) Create({{camelCase name}} *{{pascalCase name}}) error {
+    if _, ok := repo.entities[{{camelCase name}}.Id]; ok {
+        return errors.New("{{pascalCase name}} already exists")
+    }
+    repo.entities[{{camelCase name}}.Id] = {{camelCase name}}
+    return nil
+}
+
+func (repo *{{pascalCase name}}Repository) Update({{camelCase name}} *{{pascalCase name}}) error {
+    if _, ok := repo.entities[{{camelCase name}}.Id]; !ok {
+        return errors.New("{{pascalCase name}} not found")
+    }
+    repo.entities[{{camelCase name}}.Id] = {{camelCase name}}
+    return nil
+}
+
+func (repo *{{pascalCase name}}Repository) Delete({{camelCase name}} *{{pascalCase name}}) error {
+    if _, ok := repo.entities[{{camelCase name}}.Id]; !ok {
+        return errors.New("{{pascalCase name}} not found")
+    }
+    delete(repo.entities, {{camelCase name}}.Id)
+    return nil
+}
+
+func (repo *{{pascalCase name}}Repository) GetByID(id string) (*{{pascalCase name}}, error) {
+    if _, ok := repo.entities[id]; !ok {
+        return nil, errors.New("{{pascalCase name}} not found")
+    }
+    return repo.entities[id], nil
+}
+
+func (repo *{{pascalCase name}}Repository) GetAll() ([]{{pascalCase name}}, error) {
+    var result []{{pascalCase name}}
+    for _, entity := range repo.entities {
+        result = append(result, *entity)
+    }
+    return result, nil
+}

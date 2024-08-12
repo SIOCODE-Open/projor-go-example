@@ -1,0 +1,103 @@
+{
+    "map": {
+        "r": "resources"
+    },
+    "filename": "src/client.ts"
+}
+---
+{{#each r}}
+/** {{{description}}} */
+export interface I{{pascalCase name}} {
+    /** Unique identifier of the {{pascalCase name}} */
+    id: string;
+    {{#each fields}}
+    /** {{{description}}} */
+    {{snakeCase name}}: {{type.ts}};
+    {{/each}}
+}
+
+export interface I{{pascalCase name}}Client {
+    create(data: I{{pascalCase name}}): Promise<void>;
+    update(data: I{{pascalCase name}}): Promise<void>;
+    delete(data: I{{pascalCase name}}): Promise<void>;
+    getById(id: string): Promise<I{{pascalCase name}}>;
+    getAll(): Promise<I{{pascalCase name}}[]>;
+}
+
+class {{pascalCase name}}ClientImpl implements I{{pascalCase name}}Client {
+    private baseUrl: string;
+
+    constructor(baseUrl: string) {
+        this.baseUrl = baseUrl;
+    }
+
+    async create(data: I{{pascalCase name}}): Promise<void> {
+        const response = await fetch(`${this.baseUrl}/{{kebabCase name}}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) {
+            throw new Error(response.statusText);
+        }
+    }
+
+    async update(data: I{{pascalCase name}}): Promise<void> {
+        const response = await fetch(`${this.baseUrl}/{{kebabCase name}}/${data.id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) {
+            throw new Error(response.statusText);
+        }
+    }
+
+    async delete(data: I{{pascalCase name}}): Promise<void> {
+        const response = await fetch(`${this.baseUrl}/{{kebabCase name}}/${data.id}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) {
+            throw new Error(response.statusText);
+        }
+    }
+
+    async getById(id: string): Promise<I{{pascalCase name}}> {
+        const response = await fetch(`${this.baseUrl}/{{kebabCase name}}/${id}`);
+        if (!response.ok) {
+            throw new Error(response.statusText);
+        }
+        return response.json();
+    }
+
+    async getAll(): Promise<I{{pascalCase name}}[]> {
+        const response = await fetch(`${this.baseUrl}/{{kebabCase name}}`);
+        if (!response.ok) {
+            throw new Error(response.statusText);
+        }
+        return response.json();
+    }
+}
+{{/each}}
+
+export interface IAppClient {
+    {{#each r}}
+    {{camelCase name}}: I{{pascalCase name}}Client;
+    {{/each}}
+}
+
+export function createAppClient(baseUrl: string): IAppClient {
+    return {
+        {{#each r}}
+        {{camelCase name}}: new {{pascalCase name}}ClientImpl(baseUrl),
+        {{/each}}
+    };
+}

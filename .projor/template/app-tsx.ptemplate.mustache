@@ -1,0 +1,150 @@
+{
+    "map": {
+        "r": "resources"
+    },
+    "filename": "src/App.tsx"
+}
+---
+import { useEffect, useState } from 'react';
+import {
+    {{#each r}}
+    I{{pascalCase name}},
+    {{/each}}
+    IAppClient,
+    createAppClient
+} from "./client";
+
+const appClient = createAppClient("http://localhost:8080");
+
+{{#each r}}
+function {{pascalCase name}}Table(
+    props: {
+        value: Array<I{{pascalCase name}}>
+    }
+) {
+    const tableRows = props.value.map(
+        (data) => (
+            <tr key={data.id}>
+                <td>{data.id}</td>
+                {{#each fields}}
+                <td>{ data.{{snakeCase name}} }</td>
+                {{/each}}
+            </tr>
+        )
+    );
+    return <table border="1">
+        <thead>
+            <tr>
+                <th>Id</th>
+                {{#each fields}}
+                <th>{{capitalCase name}}</th>
+                {{/each}}
+            </tr>
+        </thead>
+        <tbody>
+            {tableRows}
+        </tbody>
+    </table>;
+}
+
+function {{pascalCase name}}CreateForm(
+    props: {
+        onCreated: () => void
+    }
+) {
+    const [id, setId] = useState("");
+    {{#each fields}}
+    const [{{snakeCase name}}, set{{pascalCase name}}] = useState(
+        {{{type.tsDefault}}}
+    );
+    {{/each}}
+
+    const clearForm = () => {
+        setId("");
+        {{#each fields}}
+        set{{pascalCase name}}(
+            {{{type.tsDefault}}}
+        );
+        {{/each}}
+    }
+
+    const onSave = async () => {
+        try {
+            await appClient.{{camelCase name}}.create({
+                id,
+                {{#each fields}}
+                {{#unless isList}}
+                {{snakeCase name}},
+                {{/unless}}
+                {{#if isList}}
+                {{snakeCase name}}: {{snakeCase name}}.split(","),
+                {{/if}}
+                {{/each}}
+            });
+            props.onCreated();
+            clearForm();
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    return <form>
+        <div>
+            <label>
+                Id
+            </label>
+            <input
+                type="text"
+                value={id}
+                onChange={(e) => setId(e.target.value)}
+            />
+        </div>
+        {{#each fields}}
+        <div>
+            <label>
+                {{capitalCase name}}
+            </label>
+            <input
+                type="text"
+                value={ {{snakeCase name}} }
+                onChange={(e) => set{{pascalCase name}}(e.target.value)}
+            />
+        </div>
+        {{/each}}
+        <button type="button" onClick={onSave}>Save</button>
+    </form>;
+}
+{{/each}}
+
+export function App() {
+    {{#each r}}
+    const [{{camelCase name}}s, set{{pascalCase name}}s] = useState<Array<I{{pascalCase name}}>>([]);
+    {{/each}}
+
+    {{#each r}}
+    const populate{{pascalCase name}}s = async () => {
+        try {
+            const data = await appClient.{{camelCase name}}.getAll();
+            set{{pascalCase name}}s(data || []);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+    {{/each}}
+
+    useEffect(() => {
+        {{#each r}}
+        populate{{pascalCase name}}s();
+        {{/each}}
+    }, []);
+
+    return (
+        <div>
+            {{#each r}}
+            <h2>{{pascalCase name}}</h2>
+            <{{pascalCase name}}Table value={ {{camelCase name}}s } />
+            <{{pascalCase name}}CreateForm onCreated={populate{{pascalCase name}}s} />
+            {{/each}}
+        </div>
+    );
+}

@@ -1,0 +1,9 @@
+id: Resource
+name: Resource
+description: A persistent resource type
+fields:
+  - name: fields
+    references: Field
+    type: attachment
+    multiple: true
+    description: The fields of the resource

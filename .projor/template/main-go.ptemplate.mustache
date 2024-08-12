@@ -1,0 +1,123 @@
+{
+    "map": {
+        "r": "resources"
+    },
+    "filename": "main.go"
+}
+---
+package main
+
+import (
+    "fmt"
+    "net/http"
+    "encoding/json"
+)
+
+var (
+    {{#each r}}
+    {{camelCase name}}Repository = New{{pascalCase name}}Repository()
+    {{/each}}
+)
+
+{{#each r}}
+func Handle{{pascalCase name}}Create(w http.ResponseWriter, r *http.Request) {
+    {{camelCase name}} := &{{pascalCase name}}{}
+    if err := json.NewDecoder(r.Body).Decode({{camelCase name}}); err != nil {
+        http.Error(w, err.Error(), http.StatusBadRequest)
+        return
+    }
+    if err := {{camelCase name}}Repository.Create({{camelCase name}}); err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+    w.WriteHeader(http.StatusCreated)
+}
+
+func Handle{{pascalCase name}}Update(w http.ResponseWriter, r *http.Request) {
+    {{camelCase name}} := &{{pascalCase name}}{}
+    if err := json.NewDecoder(r.Body).Decode({{camelCase name}}); err != nil {
+        http.Error(w, err.Error(), http.StatusBadRequest)
+        return
+    }
+    if err := {{camelCase name}}Repository.Update({{camelCase name}}); err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+    w.WriteHeader(http.StatusOK)
+}
+
+func Handle{{pascalCase name}}Delete(w http.ResponseWriter, r *http.Request) {
+    {{camelCase name}} := &{{pascalCase name}}{}
+    if err := json.NewDecoder(r.Body).Decode({{camelCase name}}); err != nil {
+        http.Error(w, err.Error(), http.StatusBadRequest)
+        return
+    }
+    if err := {{camelCase name}}Repository.Delete({{camelCase name}}); err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+    w.WriteHeader(http.StatusOK)
+}
+
+func Handle{{pascalCase name}}GetByID(w http.ResponseWriter, r *http.Request) {
+    id := r.URL.Path[len("/{{kebabCase name}}/"):]
+    {{camelCase name}}, err := {{camelCase name}}Repository.GetByID(id)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusNotFound)
+        return
+    }
+    if err := json.NewEncoder(w).Encode({{camelCase name}}); err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+    w.WriteHeader(http.StatusOK)
+}
+
+func Handle{{pascalCase name}}GetAll(w http.ResponseWriter, r *http.Request) {
+    {{camelCase name}}s, err := {{camelCase name}}Repository.GetAll()
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+    if err := json.NewEncoder(w).Encode({{camelCase name}}s); err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+    w.WriteHeader(http.StatusOK)
+}
+
+func Handle{{pascalCase name}}Request(w http.ResponseWriter, r *http.Request) {
+    w.Header().Set("Content-Type", "application/json")
+    w.Header().Set("Access-Control-Allow-Origin", "*")
+    w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+    w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Accept")
+    switch r.Method {
+    case http.MethodOptions:
+        w.WriteHeader(http.StatusOK)
+        w.Header().Set("Allow", "GET, POST, PUT, DELETE, OPTIONS")
+    case http.MethodPost:
+        Handle{{pascalCase name}}Create(w, r)
+    case http.MethodPut:
+        Handle{{pascalCase name}}Update(w, r)
+    case http.MethodDelete:
+        Handle{{pascalCase name}}Delete(w, r)
+    case http.MethodGet:
+        if r.URL.Path == "/{{kebabCase name}}" {
+            Handle{{pascalCase name}}GetAll(w, r)
+        } else {
+            Handle{{pascalCase name}}GetByID(w, r)
+        }
+    default:
+        http.Error(w, fmt.Sprintf("Method %s not allowed", r.Method), http.StatusMethodNotAllowed)
+    }
+}
+{{/each}}
+
+func main() {
+    {{#each r}}
+    http.HandleFunc("/{{kebabCase name}}", Handle{{pascalCase name}}Request)
+    {{/each}}
+
+    fmt.Println("Server running on port 8080")
+    http.ListenAndServe(":8080", nil)
+}

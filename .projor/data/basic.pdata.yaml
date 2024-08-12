@@ -1,0 +1,25 @@
+id: basic
+name: Basic Types
+description: Basic types supported for resource attributes
+schema: BasicType
+objects:
+  - name: String
+    description: String
+    go: string
+    ts: string
+    tsDefault: '""'
+  - name: Int32
+    description: 32-bit integer
+    go: int32
+    ts: number
+    tsDefault: '0'
+  - name: Float32
+    description: 32-bit floating point number
+    go: float32
+    ts: number
+    tsDefault: '0.0'
+  - name: Boolean
+    description: Boolean
+    go: bool
+    ts: boolean
+    tsDefault: 'false'
